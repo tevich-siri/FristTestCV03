@@ -1,1 +1,487 @@
 
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เก็บดาวกันลูกๆ</title>
+  <!-- ใช้ฟอนต์ Prompt จาก Google (เหมาะกับ GitHub Pages) -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --panel:#ffffff; --panel2:#f0f4ff;
+      --text:#1b2559; --muted:#5c6fb0;
+      --primary:#6c63ff; --primaryDark:#4f46e5;
+      --shadow: 0 10px 24px rgba(30,41,59,.12);
+    }
+    *{box-sizing:border-box} html,body{height:100%;margin:0}
+    body{
+      font-family:'Prompt',ui-rounded,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      color:var(--text); display:flex; align-items:center; justify-content:center; padding:16px;
+      transition: background 600ms ease;
+    }
+    .container{width:100%; max-width:1100px}
+    h1{margin:0; font-size:34px; letter-spacing:.2px; color:#1f2a5f; font-weight:700}
+    .row{display:flex; gap:12px; align-items:flex-end; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap}
+    .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .btn{
+      appearance:none; border:0; background:var(--primary);
+      color:#fff; padding:14px 18px; border-radius:16px; font-weight:700; cursor:pointer;
+      box-shadow: var(--shadow); font-size:16px; letter-spacing:.2px;
+      transition:transform .05s ease, filter .15s ease; touch-action: manipulation;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn:active{transform:scale(.98)}
+    .btn.secondary{background:#94a3ff; color:#0b0f2a}
+    .btn.ghost{background:#e8edff; color:#18224d}
+    .btn.big{font-size:18px; padding:16px 22px; border-radius:18px}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+
+    .hud{display:grid; grid-template-columns:repeat(6, minmax(130px,1fr)); gap:12px; margin-bottom:16px}
+    .card{
+      background:var(--panel); border:1px solid #e5eaff; border-radius:16px; padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between; box-shadow: var(--shadow)
+    }
+    .card small{color:var(--muted); font-size:13px}
+
+    .boardWrap{position:relative}
+    .board{
+      outline:none; position:relative; margin:0 auto; border-radius:22px; border:1px solid #e5eaff;
+      background:linear-gradient(180deg, #f8fbff, #edf2ff); padding:10px; box-shadow: var(--shadow); overflow:hidden
+    }
+    .grid{display:grid}
+    .cell{
+      position:relative; margin:2px; border-radius:12px; background:#e9efff;
+      width:44px; height:44px; border:1px solid #dbe3ff
+    }
+    .coin{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; user-select:none}
+    .player{
+      position:absolute; inset:0; margin:5px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+      font-size:24px; user-select:none; color:#fff; font-weight:700
+    }
+    .mickie{background:linear-gradient(180deg, #60a5fa, #3b82f6)}
+    .indy{background:linear-gradient(180deg, #34d399, #10b981)}
+
+    /* overlays */
+    .overlay{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none; z-index:900;
+    }
+    .gameover{
+      position:absolute; inset:0;
+      display:none; align-items:center; justify-content:center;
+      pointer-events:auto; z-index:1000;
+    }
+    .overlayBox{
+      padding:14px 18px; background:#00000060; border:1px solid #ffffff50; border-radius:18px;
+      font-weight:700; text-align:center; color:#fff; box-shadow: var(--shadow)
+    }
+    .goPanel{
+      padding:26px 28px; background:#111827cc; border:1px solid #ffffff40; border-radius:22px;
+      text-align:center; max-width:92%; color:#fff; box-shadow: var(--shadow)
+    }
+    .goTitle{font-size:48px; font-weight:700; margin-bottom:10px}
+    .goSub{color:#e5edff; margin-bottom:18px}
+
+    /* Character Select Modal */
+    .charselect{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background:rgba(10,15,40,.45); z-index:1200;
+    }
+    .charbox{
+      background:#fff; color:#0b1540; border-radius:22px; border:1px solid #e6eaff; padding:22px; width:min(680px, 92%);
+      box-shadow: 0 20px 40px rgba(0,0,0,.15);
+    }
+    .charbox h2{margin:0 0 12px; font-size:24px}
+    .charoptions{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 16px}
+    .charopt{
+      border:2px solid #e4e8ff; border-radius:16px; padding:14px; display:flex; gap:12px; align-items:center; cursor:pointer;
+      font-weight:700; font-size:18px; background:#f9fbff;
+    }
+    .charopt .emo{font-size:28px}
+    .charopt.active{border-color:#6c63ff; box-shadow:0 0 0 4px #edf0ff}
+    .charactions{display:flex; gap:10px; justify-content:flex-end}
+    .note{color:#4b5aa8; font-size:13px}
+
+    .picker{display:flex; gap:10px; align-items:center}
+    .opt{border:2px solid #dbe3ff; background:#fff; padding:10px 12px; border-radius:16px; cursor:pointer;
+      display:flex; align-items:center; gap:10px; box-shadow: var(--shadow); font-weight:700}
+    .opt.active{border-color:var(--primary); outline:3px solid #dfe3ff}
+    .tip{color:#5167b7; text-align:center; margin-top:10px; font-size:13px}
+
+    /* D-Pad */
+    .pad{
+      position:fixed; right:20px; bottom:20px; display:grid;
+      grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; gap:10px; z-index:1300
+    }
+    .pad .pbtn{
+      background:#ffffff; color:#1b2559; border:2px solid #e5eaff; border-radius:16px; box-shadow: var(--shadow);
+      display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; cursor:pointer; user-select:none
+    }
+    .pad .pbtn:active{transform:scale(.97)}
+    .pad .blank{background:transparent; border:none; box-shadow:none}
+
+    @media (max-width:860px){ .hud{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:520px){
+      .hud{grid-template-columns:repeat(2,1fr)}
+      .pad{right:12px; bottom:12px; gap:8px}
+      .pad .pbtn{width:56px; height:56px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <h1>เก็บดาวกันลูกๆ</h1>
+      <div class="controls" id="menu">
+        <div class="picker" id="picker"></div>
+        <button class="btn big" id="restartBtn" style="display:none;">เริ่มด่านนี้ใหม่</button>
+        <button class="btn ghost big" id="backBtn" style="display:none;">กลับเมนู</button>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="card"><small>ตัวละคร</small><b id="hudChar">-</b></div>
+      <div class="card"><small>ด่าน</small><b id="hudLevel">1</b></div>
+      <div class="card"><small>ของที่เก็บ</small><b id="hudCoins">0/3</b></div>
+      <div class="card"><small>เวลา</small><b id="hudTime">25s</b></div>
+      <div class="card"><small>คะแนน</small><b id="hudScore">0</b></div>
+      <div class="card"><small>สถิติสูงสุด</small><b id="hudBest">M:L1/S0 • I:L1/S0</b></div>
+    </div>
+
+    <div class="boardWrap">
+      <div class="overlay" id="motOverlay" style="display:none;">
+        <div class="overlayBox" id="motText">Level 10! เก่งมาก!</div>
+      </div>
+
+      <div class="gameover" id="gameOver" style="display:none;">
+        <div class="goPanel">
+          <div class="goTitle">ป๊ารักลูกๆนะครับ</div>
+          <div class="goSub">หมดเวลาแล้ว ลองใหม่อีกครั้งนะ!</div>
+          <div class="controls" style="justify-content:center; gap:12px">
+            <button class="btn big" id="newBtn">เริ่มเล่นใหม่</button>
+            <button class="btn secondary big" id="retryBtn">เล่นด่านเดิม</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="board" id="board" tabindex="0" title="แตะกระดานก่อน แล้วใช้ปุ่มทิศทาง">
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="tip">Tips: แตะกระดานเพื่อโฟกัส แล้วใช้ปุ่มลูกศร / WASD หรือกดปุ่มทิศทางด้านล่างขวา</div>
+    </div>
+  </div>
+
+  <!-- Character Select Modal (บังคับเลือกก่อนเริ่ม) -->
+  <div class="charselect" id="charSelect">
+    <div class="charbox">
+      <h2>เลือกตัวละครก่อนเริ่มเล่น</h2>
+      <div class="charoptions">
+        <div class="charopt" data-char="Mickie">
+          <div class="emo">🧛</div>
+          <div><div><b>Mickie</b></div><small class="note">พลังดูดเลือด…เอ๊ย แรงใจล้น! 😄</small></div>
+        </div>
+        <div class="charopt" data-char="Indy">
+          <div class="emo">🧟</div>
+          <div><div><b>Indy</b></div><small class="note">สายชิล เดินเนียนเก็บได้เรื่อย ๆ</small></div>
+        </div>
+      </div>
+      <div class="charactions">
+        <button class="btn ghost" id="cancelPick" disabled>ยกเลิก</button>
+        <button class="btn big" id="confirmPick" disabled>เริ่มเล่น</button>
+      </div>
+      <div class="note" style="margin-top:8px;">ต้องเลือกตัวละครก่อนถึงจะเริ่มเล่นได้</div>
+    </div>
+  </div>
+
+  <!-- Floating D-Pad -->
+  <div class="pad" id="pad">
+    <div class="pbtn blank"></div>
+    <div class="pbtn" data-dir="up">▲</div>
+    <div class="pbtn blank"></div>
+    <div class="pbtn" data-dir="left">◀</div>
+    <div class="pbtn" data-dir="ok">◎</div>
+    <div class="pbtn" data-dir="right">▶</div>
+    <div class="pbtn blank"></div>
+    <div class="pbtn" data-dir="down">▼</div>
+    <div class="pbtn blank"></div>
+  </div>
+
+  <script>
+    // ===== Config =====
+    const GRID_COLS=15, GRID_ROWS=10, TILE=44, START_COINS=3, LEVEL_TIME=25;
+    const STAR="⭐️"; const FRUITS=["🍓","🍒","🍉","🍎"];
+
+    // พาสเทลเปลี่ยนพื้นหลังตามเลเวล (วนลูป)
+    const PASTELS = [
+      ['#fef6ff','#e9f0ff','#fff4f0'], // ชมพูอ่อน-ฟ้าพาสเทล
+      ['#e6fbff','#fef7ff','#f4fff5'], // ฟ้าน้ำทะเล-ชมพูจาง-เขียวมินต์
+      ['#fff7e6','#e6fff7','#f0f3ff'], // ส้มอ่อน-เขียวอ่อน-ฟ้าอ่อน
+      ['#fdf0ff','#f2fff8','#fff6ed'], // ม่วงอ่อน-เขียวอ่อน-ส้มพาสเทล
+      ['#eaf7ff','#fff0f5','#f7fff0'], // ฟ้าใส-ชมพูอ่อน-เขียวพาสเทล
+      ['#fff6f0','#f0f7ff','#f6fff6'], // ส้มครีม-ฟ้าพาสเทล-เขียวอ่อน
+    ];
+    function applyLevelTheme(lv){
+      const t = PASTELS[(lv-1) % PASTELS.length];
+      document.body.style.background =
+        `radial-gradient(800px 600px at 20% -10%, ${t[0]}, transparent),
+         radial-gradient(800px 600px at 120% 110%, ${t[1]}, transparent),
+         linear-gradient(180deg, ${t[2]}, #ffffff)`;
+    }
+
+    const CHARACTERS={
+      Mickie:{label:"Mickie", class:"mickie", emoji:"🧛"},
+      Indy:{label:"Indy", class:"indy", emoji:"🧟"},
+    };
+
+    // ===== State =====
+    let gameStarted=false, gameOver=false;
+    let level=1, coins=[], coinIcons=[], player={x:1,y:1}, collected=0, need=START_COINS;
+    let timeLeft=LEVEL_TIME, timerId=null;
+    let character=null; let score=0;
+
+    const best = JSON.parse(localStorage.getItem("kidStarsBest")||"{}");
+    if(!best.Mickie) best.Mickie={level:1, score:0};
+    if(!best.Indy) best.Indy={level:1, score:0};
+
+    // ===== DOM =====
+    const gridEl=document.getElementById('grid');
+    const boardEl=document.getElementById('board');
+    const hudChar=document.getElementById('hudChar');
+    const hudLevel=document.getElementById('hudLevel');
+    const hudCoins=document.getElementById('hudCoins');
+    const hudTime=document.getElementById('hudTime');
+    const hudScore=document.getElementById('hudScore');
+    const hudBest=document.getElementById('hudBest');
+    const restartBtn=document.getElementById('restartBtn');
+    const backBtn=document.getElementById('backBtn');
+    const motOverlay=document.getElementById('motOverlay');
+    const motText=document.getElementById('motText');
+    const gameOverEl=document.getElementById('gameOver');
+    const newBtn=document.getElementById('newBtn');
+    const retryBtn=document.getElementById('retryBtn');
+    const picker=document.getElementById('picker');
+    const pad=document.getElementById('pad');
+
+    const charSelect=document.getElementById('charSelect');
+    const confirmPick=document.getElementById('confirmPick');
+    const cancelPick=document.getElementById('cancelPick');
+    const charOpts=[...document.querySelectorAll('.charopt')];
+
+    // ===== Helpers =====
+    function buildGrid(){
+      gridEl.style.gridTemplateColumns=`repeat(${GRID_COLS}, ${TILE}px)`;
+      gridEl.style.gridTemplateRows=`repeat(${GRID_ROWS}, ${TILE}px)`;
+      gridEl.innerHTML='';
+      for(let y=0;y<GRID_ROWS;y++){
+        for(let x=0;x<GRID_COLS;x++){
+          const cell=document.createElement('div');
+          cell.className='cell'; cell.dataset.x=x; cell.dataset.y=y;
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    // จำนวนของเก็บ เพิ่ม 10% ต่อเลเวล
+    function requiredCoins(lv){
+      return Math.max(1, Math.ceil(START_COINS * Math.pow(1.10, lv - 1)));
+    }
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function renderHUD(){
+      hudChar.textContent= character ? `${CHARACTERS[character].label} ${CHARACTERS[character].emoji}` : '-';
+      hudLevel.textContent=level;
+      hudCoins.textContent=`${collected}/${need}`;
+      hudTime.textContent=`${Math.max(0,timeLeft)}s`;
+      hudScore.textContent=score;
+      hudBest.textContent=`M:L${best.Mickie.level}/S${best.Mickie.score} • I:L${best.Indy.level}/S${best.Indy.score}`;
+    }
+
+    function renderActors(){
+      const cells=gridEl.children;
+      for(const cell of cells){ cell.innerHTML=''; }
+      for(let i=0;i<coins.length;i++){
+        const c=coins[i], icon=coinIcons[i]||STAR;
+        const idx=c.y*GRID_COLS+c.x; const cell=cells[idx];
+        const d=document.createElement('div'); d.className='coin'; d.textContent=icon; cell.appendChild(d);
+      }
+      const pidx=player.y*GRID_COLS+player.x; const pcell=cells[pidx];
+      const pdiv=document.createElement('div'); pdiv.className='player '+(character?CHARACTERS[character].class:''); pdiv.textContent= character ? CHARACTERS[character].emoji : '🙂'; pcell.appendChild(pdiv);
+    }
+
+    function setupPicker(){
+      picker.innerHTML='';
+      Object.keys(CHARACTERS).forEach((k)=>{
+        const opt=document.createElement('div');
+        const active=character===k;
+        opt.className='opt'+(active?' active':'');
+        opt.innerHTML=`<span style="font-size:22px">${CHARACTERS[k].emoji}</span><span>${CHARACTERS[k].label}</span>`;
+        opt.onclick=()=>{ character=k; setupPicker(); renderHUD(); };
+        picker.appendChild(opt);
+      });
+    }
+
+    function makeCoinIcons(lv, count){
+      if(lv%10!==0){ return Array.from({length:count}, ()=>STAR); }
+      const arr=[]; for(let i=0;i<count;i++){ arr.push(FRUITS[randInt(0,FRUITS.length-1)]); }
+      if(count>1){
+        const allSame=arr.every(v=>v===arr[0]);
+        if(allSame){ const idx=randInt(0,count-1); const alt=FRUITS.find(f=>f!==arr[0])||FRUITS[0]; arr[idx]=alt; }
+      }
+      return arr;
+    }
+
+    function setupLevel(lv=level){
+      applyLevelTheme(lv);
+      player={x:1,y:1};
+      const placed=new Set([player.x+','+player.y]);
+      coins=[];
+      const count=requiredCoins(lv);
+      let guard=0;
+      while(coins.length<count && guard<8000){
+        guard++;
+        const p={x:randInt(0,GRID_COLS-1), y:randInt(0,GRID_ROWS-1)};
+        const k=p.x+','+p.y;
+        if(!placed.has(k)){ placed.add(k); coins.push(p); }
+      }
+      collected=0; need=count; timeLeft=LEVEL_TIME; gameOver=false;
+      coinIcons=makeCoinIcons(lv, coins.length);
+      renderHUD(); renderActors();
+    }
+
+    function startTimer(){
+      stopTimer();
+      timerId=setInterval(()=>{
+        timeLeft--; renderHUD();
+        if(timeLeft<=0 && collected<need){ triggerGameOver(); }
+      }, 1000);
+    }
+    function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+
+    function saveBests(){
+      if(level>best[character].level) best[character].level=level;
+      if(score>best[character].score) best[character].score=score;
+      localStorage.setItem("kidStarsBest", JSON.stringify(best));
+    }
+
+    function triggerGameOver(){
+      if(gameOver) return;
+      gameOver=true; stopTimer(); saveBests();
+      gameOverEl.style.display='flex';
+    }
+    function hideGameOver(){ gameOverEl.style.display='none'; }
+
+    function showMotivation(nextLevel){
+      motText.textContent=`Level ${nextLevel}! เก่งมากๆ เลย ✨`;
+      motOverlay.style.display='flex';
+      setTimeout(()=> motOverlay.style.display='none', 2000);
+    }
+
+    function addScoreOnPickup(){ score+=10; }
+    function addScoreOnClear(){ score+=Math.max(0,timeLeft)*5; }
+
+    function tryMove(dx,dy){
+      if(!gameStarted || gameOver) return;
+      const nx=Math.max(0, Math.min(GRID_COLS-1, player.x+dx));
+      const ny=Math.max(0, Math.min(GRID_ROWS-1, player.y+dy));
+      player={x:nx,y:ny};
+      const idx=coins.findIndex(c=>c.x===nx && c.y===ny);
+      if(idx>=0){ coins.splice(idx,1); coinIcons.splice(idx,1); collected++; addScoreOnPickup(); renderHUD(); }
+      renderActors();
+      if(collected>=need){
+        addScoreOnClear();
+        if(level>best[character].level) best[character].level=level;
+        if(score>best[character].score) best[character].score=score;
+        localStorage.setItem("kidStarsBest", JSON.stringify(best));
+        const nextLevel=level+1;
+        if(nextLevel%10===0) showMotivation(nextLevel);
+        level=nextLevel; setupLevel(nextLevel);
+      }
+    }
+
+    // ===== Character Select flow =====
+    let pendingPick=null;
+    charOpts.forEach(opt=>{
+      opt.addEventListener('click', ()=>{
+        charOpts.forEach(o=>o.classList.remove('active'));
+        opt.classList.add('active');
+        pendingPick = opt.getAttribute('data-char');
+        confirmPick.disabled = false;
+        cancelPick.disabled = false;
+      });
+    });
+    confirmPick.addEventListener('click', ()=>{
+      if(!pendingPick) return;
+      character = pendingPick;
+      setupPicker(); renderHUD();
+      charSelect.style.display='none';
+      startGame();
+    });
+    cancelPick.addEventListener('click', ()=>{
+      // ให้เลือกก่อนเท่านั้น เลยไม่ปิด modal ถ้าอยากปิดก็ได้ แต่ตามโจทย์ "ต้องเลือกก่อน"
+      // ทำอะไรไม่ต้องก็ได้
+    });
+
+    // Keyboard & D-Pad
+    const boardElKeyHandler = (e)=>{
+      if(!gameStarted || gameOver) return;
+      switch(e.key){
+        case 'ArrowUp': case 'w': case 'W': tryMove(0,-1); break;
+        case 'ArrowDown': case 's': case 'S': tryMove(0,1); break;
+        case 'ArrowLeft': case 'a': case 'A': tryMove(-1,0); break;
+        case 'ArrowRight': case 'd': case 'D': tryMove(1,0); break;
+        default: return;
+      }
+      e.preventDefault();
+    };
+    document.getElementById('board').addEventListener('keydown', boardElKeyHandler);
+    document.getElementById('pad').addEventListener('touchstart', (e)=>{ e.preventDefault(); }, {passive:false});
+    document.querySelectorAll('.pbtn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const dir=btn.getAttribute('data-dir');
+        if(dir==='up') tryMove(0,-1);
+        if(dir==='down') tryMove(0,1);
+        if(dir==='left') tryMove(-1,0);
+        if(dir==='right') tryMove(1,0);
+      });
+    });
+
+    // Buttons
+    function startGame(){
+      level=1; score=0; gameStarted=true; gameOver=false; setupLevel(1);
+      restartBtn.style.display='inline-flex'; backBtn.style.display='inline-flex';
+      boardEl.focus(); startTimer();
+    }
+    function restartLevel(){ gameOver=false; setupLevel(level); boardEl.focus(); startTimer(); }
+    function backToMenu(){
+      gameStarted=false; gameOver=false;
+      restartBtn.style.display='none'; backBtn.style.display='none';
+      stopTimer(); renderHUD(); renderActors();
+      // กลับไปเลือกตัวละครใหม่
+      charSelect.style.display='flex';
+      pendingPick=null; confirmPick.disabled=true; cancelPick.disabled=true;
+      charOpts.forEach(o=>o.classList.remove('active'));
+      character=null; renderHUD(); setupPicker();
+    }
+    restartBtn.onclick=restartLevel; backBtn.onclick=backToMenu;
+    newBtn.onclick=()=>{ hideGameOver(); startGame(); };
+    retryBtn.onclick=()=>{ hideGameOver(); restartLevel(); };
+
+    // Init
+    function setupPickerInitial(){
+      picker.innerHTML='';
+      Object.keys(CHARACTERS).forEach((k)=>{
+        const opt=document.createElement('div');
+        opt.className='opt';
+        opt.innerHTML=`<span style="font-size:24px">${CHARACTERS[k].emoji}</span><span>${CHARACTERS[k].label}</span>`;
+        picker.appendChild(opt);
+      });
+    }
+    applyLevelTheme(1);
+    buildGrid(); setupPickerInitial(); setupLevel(1); renderHUD(); renderActors();
+    boardEl.addEventListener('click', ()=> boardEl.focus());
+  </script>
+</body>
+</html>
