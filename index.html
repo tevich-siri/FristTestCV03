@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>เก็บดาวกันลูกๆ</title>
-  <!-- ฟอนต์ Prompt จาก Google (เหมาะกับ GitHub Pages) -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -50,8 +49,6 @@
       display:flex; align-items:center; justify-content:space-between; box-shadow: var(--shadow)
     }
     .card small{color:var(--muted); font-size:13px}
-    .tog{display:flex; gap:8px; align-items:center}
-    .tog input{width:20px; height:20px}
 
     .boardWrap{position:relative}
     .board{
@@ -59,9 +56,7 @@
       background:linear-gradient(180deg, #f8fbff, #edf2ff); padding:10px; box-shadow: var(--shadow); overflow:hidden
     }
     .board.lowtime{animation: pulseBorder .6s ease-in-out infinite}
-    @keyframes pulseBorder{
-      0%{ border-color:#e5eaff } 50%{ border-color:#ffb4b4 } 100%{ border-color:#e5eaff }
-    }
+    @keyframes pulseBorder{ 0%{border-color:#e5eaff} 50%{border-color:#ffb4b4} 100%{border-color:#e5eaff} }
 
     .grid{display:grid}
     .cell{
@@ -69,72 +64,51 @@
       width:44px; height:44px; border:1px solid #dbe3ff; overflow:visible
     }
     .coin{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; user-select:none}
-    .pop{
-      position:absolute; left:50%; top:-6px; transform:translate(-50%,-100%);
-      background:#00000070; color:#fff; font-size:12px; padding:2px 6px; border-radius:10px; pointer-events:none;
-      animation: popfade .7s ease forwards
-    }
-    @keyframes popfade{
-      0%{opacity:0; transform:translate(-50%,-60%)} 
-      30%{opacity:1; transform:translate(-50%,-100%)} 
-      100%{opacity:0; transform:translate(-50%,-140%)}
-    }
+    .obst{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:22px; user-select:none; opacity:.9}
+    .pop{position:absolute; left:50%; top:-6px; transform:translate(-50%,-100%); background:#00000070; color:#fff; font-size:12px; padding:2px 6px; border-radius:10px; pointer-events:none; animation: popfade .7s ease forwards}
+    @keyframes popfade{ 0%{opacity:0; transform:translate(-50%,-60%)} 30%{opacity:1; transform:translate(-50%,-100%)} 100%{opacity:0; transform:translate(-50%,-140%)} }
 
-    .player{
-      position:absolute; inset:0; margin:5px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-      font-size:24px; user-select:none; color:#fff; font-weight:700
-    }
+    .player{ position:absolute; inset:0; margin:5px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px; user-select:none; color:#fff; font-weight:700 }
     .mickie{background:linear-gradient(180deg, #60a5fa, #3b82f6)}
     .indy{background:linear-gradient(180deg, #34d399, #10b981)}
 
     /* overlays */
-    .overlay{
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:900;
-    }
-    .gameover{
-      position:absolute; inset:0; display:none; align-items:center; justify-content:center; pointer-events:auto; z-index:1000;
-    }
-    .overlayBox{
-      padding:14px 18px; background:#00000060; border:1px solid #ffffff50; border-radius:18px;
-      font-weight:700; text-align:center; color:#fff; box-shadow: var(--shadow)
-    }
-    .goPanel{
-      padding:26px 28px; background:#111827cc; border:1px solid #ffffff40; border-radius:22px;
-      text-align:center; max-width:92%; color:#fff; box-shadow: var(--shadow)
-    }
+    .overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:900 }
+    .gameover{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; pointer-events:auto; z-index:1000 }
+    .overlayBox{ padding:14px 18px; background:#00000060; border:1px solid #ffffff50; border-radius:18px; font-weight:700; text-align:center; color:#fff; box-shadow: var(--shadow) }
+    .goPanel{ padding:26px 28px; background:#111827cc; border:1px solid #ffffff40; border-radius:22px; text-align:center; max-width:92%; color:#fff; box-shadow: var(--shadow) }
     .goTitle{font-size:48px; font-weight:700; margin-bottom:10px}
     .goSub{color:#e5edff; margin-bottom:18px}
 
-    /* Character Select Modal */
-    .charselect{
-      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
-      background:rgba(10,15,40,.45); z-index:1200;
-    }
-    .charbox{
-      background:#fff; color:#0b1540; border-radius:22px; border:1px solid #e6eaff; padding:22px; width:min(720px, 92%);
-      box-shadow: 0 20px 40px rgba(0,0,0,.15);
-    }
+    /* Character & Skin Select Modal */
+    .charselect{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,15,40,.45); z-index:1200 }
+    .charbox{ background:#fff; color:#0b1540; border-radius:22px; border:1px solid #e6eaff; padding:22px; width:min(760px, 92%); box-shadow: 0 20px 40px rgba(0,0,0,.15) }
     .charbox h2{margin:0 0 12px; font-size:24px}
     .charoptions{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 16px}
-    .charopt{
-      border:2px solid #e4e8ff; border-radius:16px; padding:14px; display:flex; gap:12px; align-items:center; cursor:pointer;
-      font-weight:700; font-size:18px; background:#f9fbff;
-    }
+    .charopt{ border:2px solid #e4e8ff; border-radius:16px; padding:14px; display:flex; gap:12px; align-items:center; cursor:pointer; font-weight:700; font-size:18px; background:#f9fbff }
     .charopt .emo{font-size:28px}
     .charopt.active{border-color:#6c63ff; box-shadow:0 0 0 4px #edf0ff}
+    .skins{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 4px }
+    .skin{ border:2px solid #e4e8ff; border-radius:12px; padding:8px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; background:#fff }
+    .skin .emo{font-size:24px}
+    .skin.locked{opacity:.5; cursor:not-allowed; position:relative}
+    .skin.locked::after{ content:"🔒"; position:absolute; right:6px; top:4px; font-size:14px }
+    .skin.active{border-color:#6c63ff; box-shadow:0 0 0 3px #edf0ff}
     .charactions{display:flex; gap:10px; justify-content:flex-end}
     .note{color:#4b5aa8; font-size:13px}
 
-    /* D-Pad */
+    /* D-Pad — ทำให้จางลง/โปร่งแสง และรองรับแตะชัวร์ */
     .pad{
       position:fixed; right:20px; bottom:20px; display:grid;
-      grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; gap:10px; z-index:1300
+      grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; gap:10px; z-index:1300;
+      -webkit-tap-highlight-color: transparent;
     }
     .pad .pbtn{
-      background:#ffffff; color:#1b2559; border:2px solid #e5eaff; border-radius:16px; box-shadow: var(--shadow);
-      display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; cursor:pointer; user-select:none
+      background:rgba(255,255,255,.72); color:#1b2559; border:2px solid rgba(229,234,255,.8); border-radius:16px; box-shadow: var(--shadow);
+      display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; user-select:none;
+      touch-action: manipulation; /* ลด delay บนอุปกรณ์สัมผัส */
     }
-    .pad .pbtn:active{transform:scale(.97)}
+    .pad .pbtn:active{transform:scale(.97); background:rgba(255,255,255,.9)}
     .pad .blank{background:transparent; border:none; box-shadow:none}
 
     @media (max-width:1100px){ .hud{grid-template-columns:repeat(4,1fr)} }
@@ -164,14 +138,12 @@
       <div class="card"><small>เวลา</small><b id="hudTime">25s</b></div>
       <div class="card"><small>คะแนน</small><b id="hudScore">0</b></div>
       <div class="card"><small>สถิติสูงสุด</small><b id="hudBest">M:L1/S0 • I:L1/S0</b></div>
-      <label class="card tog"><small>เสียง</small><input type="checkbox" id="toggleSound" checked></label>
-      <label class="card tog"><small>สั่น</small><input type="checkbox" id="toggleVibrate" checked></label>
+      <div class="card"><small>รวมสะสม</small><b id="hudTotal">0</b></div>
+      <div class="card"><small>สกิน</small><button class="btn ghost" id="changeSkin">เปลี่ยน</button></div>
     </div>
 
     <div class="boardWrap">
-      <div class="overlay" id="motOverlay" style="display:none;">
-        <div class="overlayBox" id="motText">Level 10! เก่งมาก!</div>
-      </div>
+      <div class="overlay" id="motOverlay" style="display:none;"><div class="overlayBox" id="motText">Level 10! เก่งมาก!</div></div>
 
       <div class="gameover" id="gameOver" style="display:none;">
         <div class="goPanel">
@@ -184,9 +156,7 @@
         </div>
       </div>
 
-      <div class="overlay" id="readyGo" style="display:none;">
-        <div class="overlayBox" id="readyText" style="font-size:42px;">3</div>
-      </div>
+      <div class="overlay" id="readyGo" style="display:none;"><div class="overlayBox" id="readyText" style="font-size:42px;">3</div></div>
 
       <div class="overlay" id="tutor" style="display:none;">
         <div class="overlayBox" style="max-width:90%; font-size:16px;">
@@ -203,21 +173,20 @@
     </div>
   </div>
 
-  <!-- Character Select Modal (บังคับเลือกก่อนเริ่ม) -->
+  <!-- Character & Skin Select Modal -->
   <div class="charselect" id="charSelect">
     <div class="charbox">
-      <h2>เลือกตัวละครก่อนเริ่มเล่น</h2>
+      <h2>เลือกตัวละคร & สกิน</h2>
       <div class="charoptions">
-        <div class="charopt" data-char="Mickie">
-          <div class="emo">🧛</div>
-          <div><div><b>Mickie</b></div><small class="note">แรงใจล้น! วิ่งลุยเก็บดาว</small></div>
-        </div>
-        <div class="charopt" data-char="Indy">
-          <div class="emo">🧟</div>
-          <div><div><b>Indy</b></div><small class="note">สายชิล เดินเนียนเก็บได้เรื่อย ๆ</small></div>
-        </div>
+        <div class="charopt" data-char="Mickie"><div class="emo">🧛</div><div><div><b>Mickie</b></div><small class="note">แรงใจล้น! วิ่งลุยเก็บดาว</small></div></div>
+        <div class="charopt" data-char="Indy"><div class="emo">🧟</div><div><div><b>Indy</b></div><small class="note">สายชิล เดินเนียนเก็บได้เรื่อย ๆ</small></div></div>
       </div>
+
+      <div class="note" style="margin:6px 0 4px;">สกิน (ปลดล็อกด้วยคะแนนรวม):</div>
+      <div class="skins" id="skinGrid"></div>
+
       <div class="charactions">
+        <span class="note" id="unlockHint"></span>
         <button class="btn ghost" id="cancelPick" disabled>ยกเลิก</button>
         <button class="btn big" id="confirmPick" disabled>เริ่มเล่น</button>
       </div>
@@ -226,7 +195,7 @@
   </div>
 
   <!-- Floating D-Pad -->
-  <div class="pad" id="pad">
+  <div class="pad" id="pad" aria-hidden="false">
     <div class="pbtn blank"></div>
     <div class="pbtn" data-dir="up">▲</div>
     <div class="pbtn blank"></div>
@@ -241,9 +210,9 @@
   <script>
     // ===== Config =====
     const GRID_COLS=15, GRID_ROWS=10, TILE=44, START_COINS=3, LEVEL_TIME=25;
-    const STAR="⭐️"; const FRUITS=["🍓","🍒","🍉","🍎"];
+    const STAR="⭐️"; const FRUITS=["🍓","🍒","🍉","🍎"]; const WALL="🧱";
 
-    // พาสเทลเปลี่ยนพื้นหลังตามเลเวล (วนลูป)
+    // พาสเทลพื้นหลังตามเลเวล
     const PASTELS = [
       ['#fef6ff','#e9f0ff','#fff4f0'],
       ['#e6fbff','#fef7ff','#f4fff5'],
@@ -260,180 +229,114 @@
          linear-gradient(180deg, ${t[2]}, #ffffff)`;
     }
 
-    const CHARACTERS={
-      Mickie:{label:"Mickie", class:"mickie", emoji:"🧛"},
-      Indy:{label:"Indy", class:"indy", emoji:"🧟"},
-    };
+    const CHARACTERS={ Mickie:{label:"Mickie", class:"mickie"}, Indy:{label:"Indy", class:"indy"} };
 
-    // ===== WebAudio: เสียงเอฟเฟกต์ =====
-    let audioCtx=null;
-    function ensureAudio(){
-      if(!soundOn) return; // เคารพการปิดเสียง
-      if(!audioCtx){
-        const A=window.AudioContext||window.webkitAudioContext;
-        audioCtx=new A();
-      }
-      if(audioCtx.state==='suspended') audioCtx.resume();
-    }
-    function beep({freq=880, dur=0.08, type='sine', vol=0.2}={}){
-      if(!audioCtx || !soundOn) return;
-      const t=audioCtx.currentTime;
-      const o=audioCtx.createOscillator();
-      const g=audioCtx.createGain();
-      o.type=type; o.frequency.value=freq;
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(vol, t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-      o.connect(g).connect(audioCtx.destination);
-      o.start(t); o.stop(t+dur+0.02);
-    }
-    function arpeggio(notes=[440,660,880], step=0.08, vol=0.22){
-      if(!audioCtx || !soundOn) return;
-      notes.forEach((f,i)=> setTimeout(()=>beep({freq:f,dur:0.07,vol,type:'triangle'}), i*step*1000));
-    }
-    const sfx = {
-      pickup(isFruit){ ensureAudio(); if(isFruit) arpeggio([880,1180], 0.07, 0.20); else beep({freq:1100, dur:0.06, type:'square', vol:0.18}); },
-      clear(){ ensureAudio(); arpeggio([660,880,1320], 0.09, 0.22); },
-      over(){ ensureAudio(); arpeggio([440,330,220], 0.12, 0.20); },
-      tick(){ ensureAudio(); beep({freq:480, dur:0.05, type:'sine', vol:0.15}); }
-    };
+    // สกิน: emoji ตามตัวละคร (บางสกินใช้เหมือนกันก็โอเค)
+    const SKINS = [
+      { key:'classic', name:'คลาสสิก', need:0,    emo:{Mickie:'🧛', Indy:'🧟'} },
+      { key:'hero',    name:'ฮีโร่',   need:500,  emo:{Mickie:'🦸', Indy:'🦸'} },
+      { key:'wizard',  name:'พ่อมด',   need:1500, emo:{Mickie:'🧙', Indy:'🧙'} },
+      { key:'astro',   name:'นักบิน',  need:3000, emo:{Mickie:'🧑‍🚀', Indy:'🧑‍🚀'} },
+    ];
 
-    // ===== Settings (persist) =====
-    let soundOn = JSON.parse(localStorage.getItem('kidStarsSound') ?? 'true');
+    // ===== WebAudio =====
+    let audioCtx=null, soundOn = JSON.parse(localStorage.getItem('kidStarsSound') ?? 'true');
     let vibrateOn = JSON.parse(localStorage.getItem('kidStarsVib') ?? 'true');
+    function ensureAudio(){ if(!soundOn) return; const A=window.AudioContext||window.webkitAudioContext; audioCtx ??= new A(); if(audioCtx.state==='suspended') audioCtx.resume(); }
+    function beep({freq=880, dur=0.08, type='sine', vol=0.2}={}){ if(!audioCtx||!soundOn) return; const t=audioCtx.currentTime; const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+dur+0.02); }
+    function arp(notes=[440,660,880], step=0.08){ if(!audioCtx||!soundOn) return; notes.forEach((f,i)=> setTimeout(()=>beep({freq:f,dur:0.07,type:'triangle',vol:0.22}), i*step*1000)); }
+    const sfx = { pickup(isFruit){ ensureAudio(); isFruit? arp([880,1180],0.07): beep({freq:1100,dur:0.06,type:'square',vol:0.18}); }, clear(){ ensureAudio(); arp([660,880,1320],0.09); }, over(){ ensureAudio(); arp([440,330,220],0.12); }, tick(){ ensureAudio(); beep({freq:480,dur:0.05,vol:0.15}); } };
+    function vibrate(ms=20){ if(vibrateOn && navigator.vibrate) navigator.vibrate(ms); }
+
+    // ===== Persisted scores =====
+    let totalScore = Number(localStorage.getItem('kidStarsTotal')||'0');
 
     // ===== State =====
     let gameStarted=false, gameOver=false, paused=false;
-    let level=1, coins=[], coinIcons=[], player={x:1,y:1}, collected=0, need=START_COINS;
+    let level=1, coins=[], coinIcons=[], obstacles=[], player={x:1,y:1}, collected=0, need=START_COINS;
     let timeLeft=LEVEL_TIME, timerId=null, lowTickArmed=false;
-    let character=null; let score=0;
-    let combo=0; let lastPickupAt=0;
+    let character=null, skin='classic', score=0, combo=0, lastPickupAt=0;
 
     const best = JSON.parse(localStorage.getItem("kidStarsBest")||"{}");
     if(!best.Mickie) best.Mickie={level:1, score:0};
     if(!best.Indy) best.Indy={level:1, score:0};
 
     // ===== DOM =====
-    const gridEl=document.getElementById('grid');
-    const boardEl=document.getElementById('board');
-    const hudChar=document.getElementById('hudChar');
-    const hudLevel=document.getElementById('hudLevel');
-    const hudCoins=document.getElementById('hudCoins');
-    const hudTime=document.getElementById('hudTime');
-    const hudScore=document.getElementById('hudScore');
-    const hudBest=document.getElementById('hudBest');
-    const pauseBtn=document.getElementById('pauseBtn');
-    const restartBtn=document.getElementById('restartBtn');
-    const backBtn=document.getElementById('backBtn');
-    const motOverlay=document.getElementById('motOverlay');
-    const motText=document.getElementById('motText');
-    const gameOverEl=document.getElementById('gameOver');
-    const newBtn=document.getElementById('newBtn');
-    const retryBtn=document.getElementById('retryBtn');
-    const picker=document.getElementById('picker');
-    const pad=document.getElementById('pad');
-    const readyGo=document.getElementById('readyGo');
-    const readyText=document.getElementById('readyText');
-    const tutor=document.getElementById('tutor');
-    const tutorOk=document.getElementById('tutorOk');
-    const charSelect=document.getElementById('charSelect');
-    const confirmPick=document.getElementById('confirmPick');
-    const cancelPick=document.getElementById('cancelPick');
-    const charOpts=[...document.querySelectorAll('.charopt')];
-    const toggleSound=document.getElementById('toggleSound');
-    const toggleVibrate=document.getElementById('toggleVibrate');
+    const gridEl=document.getElementById('grid'), boardEl=document.getElementById('board');
+    const hudChar=document.getElementById('hudChar'), hudLevel=document.getElementById('hudLevel'), hudCoins=document.getElementById('hudCoins');
+    const hudTime=document.getElementById('hudTime'), hudScore=document.getElementById('hudScore'), hudBest=document.getElementById('hudBest'), hudTotal=document.getElementById('hudTotal');
+    const pauseBtn=document.getElementById('pauseBtn'), restartBtn=document.getElementById('restartBtn'), backBtn=document.getElementById('backBtn');
+    const motOverlay=document.getElementById('motOverlay'), motText=document.getElementById('motText');
+    const gameOverEl=document.getElementById('gameOver'), newBtn=document.getElementById('newBtn'), retryBtn=document.getElementById('retryBtn');
+    const picker=document.getElementById('picker'), pad=document.getElementById('pad');
+    const readyGo=document.getElementById('readyGo'), readyText=document.getElementById('readyText'), tutor=document.getElementById('tutor'), tutorOk=document.getElementById('tutorOk');
+    const charSelect=document.getElementById('charSelect'), confirmPick=document.getElementById('confirmPick'), cancelPick=document.getElementById('cancelPick');
+    const charOpts=[...document.querySelectorAll('.charopt')], skinGrid=document.getElementById('skinGrid'), unlockHint=document.getElementById('unlockHint');
+    const changeSkinBtn=document.getElementById('changeSkin');
+    const toggleSound = document.createElement('input'), toggleVibrate = document.createElement('input'); // (ไม่ใช้ที่นี่แล้ว — เหลือจากรุ่นก่อน)
 
     // ===== Helpers =====
     function buildGrid(){
       gridEl.style.gridTemplateColumns=`repeat(${GRID_COLS}, ${TILE}px)`;
       gridEl.style.gridTemplateRows=`repeat(${GRID_ROWS}, ${TILE}px)`;
       gridEl.innerHTML='';
-      for(let y=0;y<GRID_ROWS;y++){
-        for(let x=0;x<GRID_COLS;x++){
-          const cell=document.createElement('div');
-          cell.className='cell'; cell.dataset.x=x; cell.dataset.y=y;
-          gridEl.appendChild(cell);
-        }
-      }
+      for(let y=0;y<GRID_ROWS;y++) for(let x=0;x<GRID_COLS;x++){ const cell=document.createElement('div'); cell.className='cell'; cell.dataset.x=x; cell.dataset.y=y; gridEl.appendChild(cell); }
     }
-
-    // จำนวนของเก็บ เพิ่ม 10% ต่อเลเวล
-    function requiredCoins(lv){
-      return Math.max(1, Math.ceil(START_COINS * Math.pow(1.10, lv - 1)));
-    }
-
+    function requiredCoins(lv){ return Math.max(1, Math.ceil(START_COINS * Math.pow(1.10, lv - 1))); }
     function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function key(x,y){ return x+','+y; }
 
     function renderHUD(){
-      hudChar.textContent= character ? `${CHARACTERS[character].label} ${CHARACTERS[character].emoji}` : '-';
+      const emo = (character && SKINS.find(s=>s.key===skin)?.emo[character]) || '🙂';
+      hudChar.textContent= character ? `${CHARACTERS[character].label} ${emo}` : '-';
       hudLevel.textContent=level;
       hudCoins.textContent=`${collected}/${need}`;
-      hudTime.textContent=`${Math.max(0,timeLeft)}s`;
-      hudTime.style.color = timeLeft<=5 ? '#ef4444' : '';
+      hudTime.textContent=`${Math.max(0,timeLeft)}s`; hudTime.style.color = timeLeft<=5 ? '#ef4444' : '';
       hudScore.textContent=score;
       hudBest.textContent=`M:L${best.Mickie.level}/S${best.Mickie.score} • I:L${best.Indy.level}/S${best.Indy.score}`;
+      hudTotal.textContent = totalScore;
       boardEl.classList.toggle('lowtime', timeLeft<=5);
     }
 
+    function isObstacle(x,y){ return obstacles.some(o=>o.x===x && o.y===y); }
+    function isCoinAt(x,y){ return coins.findIndex(c=>c.x===x && c.y===y); }
+
     function renderActors(){
-      const cells=gridEl.children;
-      for(const cell of cells){ cell.innerHTML=''; }
-      for(let i=0;i<coins.length;i++){
-        const c=coins[i], icon=coinIcons[i]||STAR;
-        const idx=c.y*GRID_COLS+c.x; const cell=cells[idx];
-        const d=document.createElement('div'); d.className='coin'; d.textContent=icon; cell.appendChild(d);
-      }
-      const pidx=player.y*GRID_COLS+player.x; const pcell=cells[pidx];
-      const pdiv=document.createElement('div'); pdiv.className='player '+(character?CHARACTERS[character].class:''); pdiv.textContent= character ? CHARACTERS[character].emoji : '🙂'; pcell.appendChild(pdiv);
+      const cells=gridEl.children; for(const cell of cells){ cell.innerHTML=''; }
+      // obstacles
+      obstacles.forEach(o=>{ const idx=o.y*GRID_COLS+o.x; const cell=cells[idx]; const d=document.createElement('div'); d.className='obst'; d.textContent=WALL; cell.appendChild(d); });
+      // coins
+      for(let i=0;i<coins.length;i++){ const c=coins[i], icon=coinIcons[i]||STAR; const idx=c.y*GRID_COLS+c.x; const cell=cells[idx]; const d=document.createElement('div'); d.className='coin'; d.textContent=icon; cell.appendChild(d); }
+      // player
+      const pidx=player.y*GRID_COLS+player.x; const pcell=cells[pidx]; const pdiv=document.createElement('div'); const emo = (character && SKINS.find(s=>s.key===skin)?.emo[character]) || '🙂';
+      pdiv.className='player '+(character?CHARACTERS[character].class:''); pdiv.textContent= emo; pcell.appendChild(pdiv);
     }
 
-    function popupScoreAt(x,y, text){
-      const idx=y*GRID_COLS+x; const cell=gridEl.children[idx];
-      const p=document.createElement('div'); p.className='pop'; p.textContent=text;
-      cell.appendChild(p); setTimeout(()=>p.remove(), 800);
-    }
+    function popupScoreAt(x,y, text){ const idx=y*GRID_COLS+x; const cell=gridEl.children[idx]; const p=document.createElement('div'); p.className='pop'; p.textContent=text; cell.appendChild(p); setTimeout(()=>p.remove(), 800); }
+    function setupPicker(){ picker.innerHTML=''; Object.keys(CHARACTERS).forEach((k)=>{ const opt=document.createElement('div'); const active=character===k; opt.className='opt'+(active?' active':''); const emo=SKINS.find(s=>s.key===skin)?.emo[k] || '🙂'; opt.innerHTML=`<span style="font-size:22px">${emo}</span><span>${CHARACTERS[k].label}</span>`; opt.onclick=()=>{ character=k; setupPicker(); renderHUD(); }; picker.appendChild(opt); }); }
 
-    function setupPicker(){
-      picker.innerHTML='';
-      Object.keys(CHARACTERS).forEach((k)=>{
-        const opt=document.createElement('div');
-        const active=character===k;
-        opt.className='opt'+(active?' active':'');
-        opt.innerHTML=`<span style="font-size:22px">${CHARACTERS[k].emoji}</span><span>${CHARACTERS[k].label}</span>`;
-        opt.onclick=()=>{ character=k; setupPicker(); renderHUD(); };
-        picker.appendChild(opt);
-      });
-    }
+    function makeCoinIcons(lv, count){ if(lv%10!==0){ return Array.from({length:count}, ()=>STAR); } const arr=[]; for(let i=0;i<count;i++){ arr.push(FRUITS[randInt(0,FRUITS.length-1)]); } if(count>1){ const allSame=arr.every(v=>v===arr[0]); if(allSame){ const idx=randInt(0,count-1); const alt=FRUITS.find(f=>f!==arr[0])||FRUITS[0]; arr[idx]=alt; } } return arr; }
 
-    function makeCoinIcons(lv, count){
-      if(lv%10!==0){ return Array.from({length:count}, ()=>STAR); }
-      const arr=[]; for(let i=0;i<count;i++){ arr.push(FRUITS[randInt(0,FRUITS.length-1)]); }
-      if(count>1){
-        const allSame=arr.every(v=>v===arr[0]);
-        if(allSame){ const idx=randInt(0,count-1); const alt=FRUITS.find(f=>f!==arr[0])||FRUITS[0]; arr[idx]=alt; }
-      }
-      return arr;
-    }
-
-    function applyTutorialIfFirstTime(){
-      const seen = localStorage.getItem('kidStarsTutorSeen');
-      if(!seen){
-        tutor.style.display='flex';
-        tutorOk.onclick = ()=>{ tutor.style.display='none'; localStorage.setItem('kidStarsTutorSeen','1'); };
-      }
+    function obstacleCountForLevel(lv){
+      // เริ่ม 4 ชิ้น + เพิ่มทุก 2 เลเวล, สูงสุด 30
+      return Math.min(30, 4 + Math.floor((lv-1)/2));
     }
 
     function setupLevel(lv=level){
       applyLevelTheme(lv);
       player={x:1,y:1};
-      const placed=new Set([player.x+','+player.y]);
-      coins=[];
-      const count=requiredCoins(lv);
-      let guard=0;
+      const placed = new Set([key(player.x,player.y)]);
+      coins=[]; obstacles=[];
+      // place obstacles
+      const obsCount = obstacleCountForLevel(lv);
+      let guard=0; while(obstacles.length<obsCount && guard<5000){
+        guard++; const p={x:randInt(0,GRID_COLS-1), y:randInt(0,GRID_ROWS-1)}; const k=key(p.x,p.y);
+        if(!placed.has(k)){ placed.add(k); obstacles.push(p); }
+      }
+      // place coins (avoid obstacles)
+      const count=requiredCoins(lv); guard=0;
       while(coins.length<count && guard<8000){
-        guard++;
-        const p={x:randInt(0,GRID_COLS-1), y:randInt(0,GRID_ROWS-1)};
-        const k=p.x+','+p.y;
+        guard++; const p={x:randInt(0,GRID_COLS-1), y:randInt(0,GRID_ROWS-1)}; const k=key(p.x,p.y);
         if(!placed.has(k)){ placed.add(k); coins.push(p); }
       }
       collected=0; need=count; timeLeft=LEVEL_TIME; gameOver=false; lowTickArmed=false;
@@ -443,62 +346,45 @@
     }
 
     function levelReadyCountdown(cb){
-      readyGo.style.display='flex';
-      let n=3; readyText.textContent=n;
-      const t=setInterval(()=>{
-        n--; if(n>0){ readyText.textContent=n; } else {
-          readyText.textContent='Go!'; setTimeout(()=>{ readyGo.style.display='none'; }, 250);
-          clearInterval(t); cb && cb();
-        }
-      }, 700);
+      readyGo.style.display='flex'; let n=3; readyText.textContent=n;
+      const t=setInterval(()=>{ n--; if(n>0){ readyText.textContent=n; } else { readyText.textContent='Go!'; setTimeout(()=>{ readyGo.style.display='none'; }, 250); clearInterval(t); cb && cb(); } }, 700);
     }
 
     function startTimer(){
       stopTimer();
       timerId=setInterval(()=>{
         if(paused) return;
-        timeLeft--; 
-        if(timeLeft<=5){
-          if(!lowTickArmed){ lowTickArmed=true; }
-          sfx.tick();
-        }
+        timeLeft--; if(timeLeft<=5){ sfx.tick(); }
         renderHUD();
         if(timeLeft<=0 && collected<need){ triggerGameOver(); }
       }, 1000);
     }
     function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
 
-    function saveBests(){
+    function saveBestsAndTotal(){
       if(character){
         if(level>best[character].level) best[character].level=level;
         if(score>best[character].score) best[character].score=score;
         localStorage.setItem("kidStarsBest", JSON.stringify(best));
       }
+      // เพิ่มคะแนนรวมสะสม
+      totalScore += score;
+      localStorage.setItem('kidStarsTotal', String(totalScore));
+      renderHUD();
     }
 
-    function vibrate(ms=20){ if(vibrateOn && navigator.vibrate) navigator.vibrate(ms); }
-
-    function triggerGameOver(){
-      if(gameOver) return;
-      gameOver=true; stopTimer(); saveBests(); sfx.over(); gameOverEl.style.display='flex'; vibrate(60);
-    }
+    function triggerGameOver(){ if(gameOver) return; gameOver=true; stopTimer(); sfx.over(); vibrate(60); saveBestsAndTotal(); gameOverEl.style.display='flex'; }
     function hideGameOver(){ gameOverEl.style.display='none'; }
 
-    function showMotivation(nextLevel){
-      motText.textContent=`Level ${nextLevel}! เก่งมากๆ เลย ✨`;
-      motOverlay.style.display='flex';
-      setTimeout(()=> motOverlay.style.display='none', 2000);
-    }
+    function showMotivation(nextLevel){ motText.textContent=`Level ${nextLevel}! เก่งมากๆ เลย ✨`; motOverlay.style.display='flex'; setTimeout(()=> motOverlay.style.display='none', 2000); }
 
     function addScoreOnPickup(base, x, y){
       const now = performance.now();
       if(now - lastPickupAt <= 2000){ combo++; } else { combo=1; }
       lastPickupAt = now;
-
-      const mult = Math.min(combo, 5); // ลิมิต x5
-      const gain = base * mult;
-      score += gain;
-      popupScoreAt(x,y, `+${gain}${mult>1?` (x${mult})`:''}`);
+      const mult = Math.min(combo, 5);
+      const gain = base * mult; score += gain;
+      popupScoreAt(x,y, `+${gain}${mult>1?` (x${mult})`:''}`); renderHUD();
     }
     function addScoreOnClear(){ score+=Math.max(0,timeLeft)*5; }
 
@@ -506,110 +392,113 @@
       if(!gameStarted || gameOver || paused) return;
       const nx=Math.max(0, Math.min(GRID_COLS-1, player.x+dx));
       const ny=Math.max(0, Math.min(GRID_ROWS-1, player.y+dy));
+      if(isObstacle(nx,ny)) return; // ชนสิ่งกีดขวาง เดินไม่ได้
       player={x:nx,y:ny};
       const idx=coins.findIndex(c=>c.x===nx && c.y===ny);
       if(idx>=0){
-        const icon = coinIcons[idx];
-        coins.splice(idx,1); coinIcons.splice(idx,1);
-        collected++;
-        addScoreOnPickup(10, nx, ny);
-        sfx.pickup(icon && icon!=='⭐️');
-        vibrate(15);
-        renderHUD();
+        const icon = coinIcons[idx]; coins.splice(idx,1); coinIcons.splice(idx,1);
+        collected++; addScoreOnPickup(10, nx, ny); sfx.pickup(icon && icon!=='⭐️'); vibrate(15);
       }
       renderActors();
       if(collected>=need){
-        addScoreOnClear(); sfx.clear(); vibrate(30);
-        saveBests();
-        const nextLevel=level+1;
-        if(nextLevel%10===0) showMotivation(nextLevel);
-        level=nextLevel; setupLevel(nextLevel);
-        levelReadyCountdown(()=>{ startTimer(); });
+        addScoreOnClear(); sfx.clear(); vibrate(30); saveBestsAndTotal();
+        const nextLevel=level+1; if(nextLevel%10===0) showMotivation(nextLevel);
+        level=nextLevel; setupLevel(nextLevel); levelReadyCountdown(()=> startTimer());
       }
     }
 
-    // ===== Character Select flow =====
-    let pendingPick=null;
+    // ===== Character & Skin Select =====
+    let pendingPick=null, pendingSkin='classic';
+    function refreshSkinGrid(){
+      skinGrid.innerHTML='';
+      SKINS.forEach(s=>{
+        const unlocked = totalScore >= s.need;
+        const btn = document.createElement('div');
+        btn.className = 'skin'+(unlocked?'':' locked')+(pendingSkin===s.key?' active':'');
+        const emo = (character? s.emo[character] : '🎭');
+        btn.innerHTML = `<div class="emo">${emo}</div><small>${s.name}${s.need?` (${s.need}+)`:''}</small>`;
+        if(unlocked){
+          btn.onclick=()=>{ pendingSkin = s.key; refreshSkinGrid(); };
+        }
+        skinGrid.appendChild(btn);
+      });
+      const nextLocked = SKINS.find(s=>totalScore < s.need);
+      unlockHint.textContent = nextLocked? `ปลดล็อกสกินถัดไปเมื่อคะแนนรวมถึง ${nextLocked.need}+` : 'ปลดล็อกครบแล้ว เย้!';
+    }
+    function openCharSkinModal(){
+      charSelect.style.display='flex';
+      pendingPick = character || null;
+      pendingSkin = skin || 'classic';
+      charOpts.forEach(o=>o.classList.remove('active'));
+      if(pendingPick){ const el = charOpts.find(o=>o.getAttribute('data-char')===pendingPick); el && el.classList.add('active'); }
+      refreshSkinGrid();
+      confirmPick.disabled = !pendingPick; cancelPick.disabled = false;
+    }
+
     charOpts.forEach(opt=>{
       opt.addEventListener('click', ()=>{
         charOpts.forEach(o=>o.classList.remove('active'));
         opt.classList.add('active');
         pendingPick = opt.getAttribute('data-char');
-        confirmPick.disabled = false;
-        cancelPick.disabled = false;
-      });
+        // เปลี่ยนอิโมจิสกินตามตัวละคร
+        refreshSkinGrid();
+        confirmPick.disabled = false; cancelPick.disabled = false;
+      }, {passive:true});
     });
+    document.getElementById('changeSkin').onclick = ()=>{ openCharSkinModal(); };
+
     confirmPick.addEventListener('click', ()=>{
       if(!pendingPick) return;
-      character = pendingPick;
+      character = pendingPick; skin = pendingSkin;
       setupPicker(); renderHUD();
       charSelect.style.display='none';
-      applyTutorialIfFirstTime();
       level=1; score=0; gameOver=false; paused=false;
       setupLevel(1);
       levelReadyCountdown(()=>{ ensureAudio(); gameStarted=true; showIngameButtons(true); startTimer(); boardEl.focus(); });
     });
-    cancelPick.addEventListener('click', ()=>{ /* ต้องเลือกก่อน จึงไม่ปิด modal */ });
+    cancelPick.addEventListener('click', ()=>{ /* ยกเลิกก็ยังอยู่หน้าเลือกต่อไป */ });
 
-    // Visibility pause
-    document.addEventListener('visibilitychange', ()=>{
-      if(document.hidden && gameStarted && !gameOver){ setPaused(true); }
-    });
+    // ===== Visibility pause =====
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden && gameStarted && !gameOver){ setPaused(true); } });
 
-    // Keyboard & D-Pad
-    const boardElKeyHandler = (e)=>{
+    // ===== Input: Keyboard & Touch/Pointer =====
+    function onKey(e){
       if(!gameStarted || gameOver) return;
-      if(e.key==='p' || e.key==='P'){ togglePause(); return e.preventDefault(); }
-      switch(e.key){
-        case 'ArrowUp': case 'w': case 'W': tryMove(0,-1); break;
-        case 'ArrowDown': case 's': case 'S': tryMove(0,1); break;
-        case 'ArrowLeft': case 'a': case 'A': tryMove(-1,0); break;
-        case 'ArrowRight': case 'd': case 'D': tryMove(1,0); break;
-        default: return;
-      }
-      e.preventDefault();
-    };
-    document.getElementById('board').addEventListener('keydown', boardElKeyHandler);
-    document.getElementById('pad').addEventListener('touchstart', (e)=>{ e.preventDefault(); }, {passive:false});
-    document.querySelectorAll('.pbtn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        ensureAudio();
-        const dir=btn.getAttribute('data-dir');
-        if(dir==='up') tryMove(0,-1);
-        if(dir==='down') tryMove(0,1);
-        if(dir==='left') tryMove(-1,0);
-        if(dir==='right') tryMove(1,0);
-      });
-    });
+      if(e.key==='p'||e.key==='P'){ togglePause(); return e.preventDefault(); }
+      const map = { ArrowUp:[0,-1], w:[0,-1], W:[0,-1], ArrowDown:[0,1], s:[0,1], S:[0,1], ArrowLeft:[-1,0], a:[-1,0], A:[-1,0], ArrowRight:[1,0], d:[1,0], D:[1,0] };
+      const m = map[e.key]; if(!m) return; tryMove(m[0], m[1]); e.preventDefault();
+    }
+    boardEl.addEventListener('keydown', onKey);
 
-    // Buttons
+    // ปุ่ม D-Pad: ใช้ pointerdown + touchstart เพื่อให้แตะติดแน่นอน
+    function bindDPad(){
+      document.querySelectorAll('.pbtn').forEach(btn=>{
+        const dir = btn.getAttribute('data-dir');
+        const handler = (ev)=>{ ev.preventDefault(); ensureAudio(); if(dir==='up')tryMove(0,-1); if(dir==='down')tryMove(0,1); if(dir==='left')tryMove(-1,0); if(dir==='right')tryMove(1,0); };
+        btn.addEventListener('pointerdown', handler);
+        btn.addEventListener('touchstart', handler, {passive:false});
+        // เพิ่ม click สำรอง
+        btn.addEventListener('click', handler);
+      });
+      // ปิด highlight iOS
+      pad.style.webkitTapHighlightColor = 'transparent';
+    }
+    bindDPad();
+
+    // ===== Buttons / Flow =====
     function showIngameButtons(on){
       pauseBtn.style.display = on ? 'inline-flex' : 'none';
       restartBtn.style.display = on ? 'inline-flex' : 'none';
       backBtn.style.display = on ? 'inline-flex' : 'none';
     }
-    function startGame(){
-      // เริ่มผ่านหน้าตัวละครแล้ว
-      setupLevel(1); ensureAudio(); gameStarted=true; paused=false; gameOver=false;
-      showIngameButtons(true); boardEl.focus(); startTimer();
-    }
-    function restartLevel(){
-      if(gameOver){ hideGameOver(); }
-      setupLevel(level); paused=false; boardEl.focus(); levelReadyCountdown(()=> startTimer());
-    }
+    function startGame(){ setupLevel(1); ensureAudio(); gameStarted=true; paused=false; gameOver=false; showIngameButtons(true); boardEl.focus(); startTimer(); }
+    function restartLevel(){ if(gameOver){ hideGameOver(); } setupLevel(level); paused=false; boardEl.focus(); levelReadyCountdown(()=> startTimer()); }
     function backToMenu(){
-      gameStarted=false; gameOver=false; paused=false; stopTimer(); renderHUD(); renderActors();
-      showIngameButtons(false);
-      charSelect.style.display='flex';
-      pendingPick=null; confirmPick.disabled=true; cancelPick.disabled=true;
-      charOpts.forEach(o=>o.classList.remove('active'));
-      character=null; renderHUD(); setupPicker();
+      if(gameStarted && !gameOver){ saveBestsAndTotal(); }
+      gameStarted=false; gameOver=false; paused=false; stopTimer(); renderHUD(); renderActors(); showIngameButtons(false);
+      openCharSkinModal();
     }
-    function setPaused(p){
-      if(!gameStarted || gameOver) return;
-      paused = p;
-      pauseBtn.textContent = p ? 'เล่นต่อ (P)' : 'หยุดพัก (P)';
-    }
+    function setPaused(p){ if(!gameStarted || gameOver) return; paused=p; pauseBtn.textContent = p ? 'เล่นต่อ (P)' : 'หยุดพัก (P)'; }
     function togglePause(){ setPaused(!paused); }
 
     pauseBtn.onclick=()=>{ ensureAudio(); togglePause(); };
@@ -618,28 +507,16 @@
     newBtn.onclick=()=>{ hideGameOver(); ensureAudio(); level=1; score=0; startGame(); };
     retryBtn.onclick=()=>{ hideGameOver(); ensureAudio(); restartLevel(); };
 
-    // Toggles persist
-    toggleSound.checked = soundOn;
-    toggleVibrate.checked = vibrateOn;
-    toggleSound.addEventListener('change', ()=>{ soundOn = toggleSound.checked; localStorage.setItem('kidStarsSound', JSON.stringify(soundOn)); if(soundOn) ensureAudio(); });
-    toggleVibrate.addEventListener('change', ()=>{ vibrateOn = toggleVibrate.checked; localStorage.setItem('kidStarsVib', JSON.stringify(vibrateOn)); });
+    // ===== Init =====
+    function setupPickerInitial(){ picker.innerHTML=''; Object.keys(CHARACTERS).forEach((k)=>{ const opt=document.createElement('div'); opt.className='opt'; opt.innerHTML=`<span style="font-size:24px">🎭</span><span>${CHARACTERS[k].label}</span>`; picker.appendChild(opt); }); }
+    function applyTutorialIfFirstTime(){ const seen = localStorage.getItem('kidStarsTutorSeen'); if(!seen){ tutor.style.display='flex'; tutorOk.onclick = ()=>{ tutor.style.display='none'; localStorage.setItem('kidStarsTutorSeen','1'); }; } }
+    function openFirstChar(){ refreshSkinGrid(); openCharSkinModal(); }
 
-    // Init
-    function setupPickerInitial(){
-      picker.innerHTML='';
-      Object.keys(CHARACTERS).forEach((k)=>{
-        const opt=document.createElement('div');
-        opt.className='opt';
-        opt.innerHTML=`<span style="font-size:24px">${CHARACTERS[k].emoji}</span><span>${CHARACTERS[k].label}</span>`;
-        picker.appendChild(opt);
-      });
-    }
     applyLevelTheme(1);
     buildGrid(); setupPickerInitial(); setupLevel(1); renderHUD(); renderActors();
     boardEl.addEventListener('click', ()=>{ ensureAudio(); boardEl.focus(); });
-
-    // เปิดหน้าจอเลือกตัวละครตั้งแต่โหลด
-    charSelect.style.display='flex';
+    document.addEventListener('DOMContentLoaded', ()=>{ hudTotal.textContent = totalScore; });
+    openFirstChar(); applyTutorialIfFirstTime();
   </script>
 </body>
 </html>
