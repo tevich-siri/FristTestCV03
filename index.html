@@ -1,17 +1,17 @@
-
 <!doctype html>
 <html lang="th">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>เก็บดาวกันลูกๆ</title>
-  <!-- ใช้ฟอนต์ Prompt จาก Google (เหมาะกับ GitHub Pages) -->
+  <!-- ฟอนต์ Prompt จาก Google (เหมาะกับ GitHub Pages) -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root{
       --panel:#ffffff; --panel2:#f0f4ff;
       --text:#1b2559; --muted:#5c6fb0;
       --primary:#6c63ff; --primaryDark:#4f46e5;
+      --danger:#ef4444;
       --shadow: 0 10px 24px rgba(30,41,59,.12);
     }
     *{box-sizing:border-box} html,body{height:100%;margin:0}
@@ -19,7 +19,14 @@
       font-family:'Prompt',ui-rounded,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
       color:var(--text); display:flex; align-items:center; justify-content:center; padding:16px;
       transition: background 600ms ease;
+      background-size: 120% 120%, 140% 140%, 100% 100%;
+      animation: pastelDrift 18s ease-in-out infinite alternate;
     }
+    @keyframes pastelDrift{
+      0%{ background-position: 10% 0%, 90% 100%, 0% 0%; }
+      100%{ background-position: 30% 10%, 110% 90%, 0% 0%; }
+    }
+
     .container{width:100%; max-width:1100px}
     h1{margin:0; font-size:34px; letter-spacing:.2px; color:#1f2a5f; font-weight:700}
     .row{display:flex; gap:12px; align-items:flex-end; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap}
@@ -30,31 +37,49 @@
       box-shadow: var(--shadow); font-size:16px; letter-spacing:.2px;
       transition:transform .05s ease, filter .15s ease; touch-action: manipulation;
     }
-    .btn:hover{filter:brightness(1.05)}
-    .btn:active{transform:scale(.98)}
+    .btn:hover{filter:brightness(1.05)} .btn:active{transform:scale(.98)}
     .btn.secondary{background:#94a3ff; color:#0b0f2a}
     .btn.ghost{background:#e8edff; color:#18224d}
+    .btn.danger{background:var(--danger)}
     .btn.big{font-size:18px; padding:16px 22px; border-radius:18px}
     .btn:disabled{opacity:.6; cursor:not-allowed}
 
-    .hud{display:grid; grid-template-columns:repeat(6, minmax(130px,1fr)); gap:12px; margin-bottom:16px}
+    .hud{display:grid; grid-template-columns:repeat(8, minmax(100px,1fr)); gap:12px; margin-bottom:16px}
     .card{
-      background:var(--panel); border:1px solid #e5eaff; border-radius:16px; padding:12px 14px;
+      background:var(--panel); border:1px solid #e5eaff; border-radius:16px; padding:10px 12px;
       display:flex; align-items:center; justify-content:space-between; box-shadow: var(--shadow)
     }
     .card small{color:var(--muted); font-size:13px}
+    .tog{display:flex; gap:8px; align-items:center}
+    .tog input{width:20px; height:20px}
 
     .boardWrap{position:relative}
     .board{
-      outline:none; position:relative; margin:0 auto; border-radius:22px; border:1px solid #e5eaff;
+      outline:none; position:relative; margin:0 auto; border-radius:22px; border:3px solid #e5eaff;
       background:linear-gradient(180deg, #f8fbff, #edf2ff); padding:10px; box-shadow: var(--shadow); overflow:hidden
     }
+    .board.lowtime{animation: pulseBorder .6s ease-in-out infinite}
+    @keyframes pulseBorder{
+      0%{ border-color:#e5eaff } 50%{ border-color:#ffb4b4 } 100%{ border-color:#e5eaff }
+    }
+
     .grid{display:grid}
     .cell{
       position:relative; margin:2px; border-radius:12px; background:#e9efff;
-      width:44px; height:44px; border:1px solid #dbe3ff
+      width:44px; height:44px; border:1px solid #dbe3ff; overflow:visible
     }
     .coin{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; user-select:none}
+    .pop{
+      position:absolute; left:50%; top:-6px; transform:translate(-50%,-100%);
+      background:#00000070; color:#fff; font-size:12px; padding:2px 6px; border-radius:10px; pointer-events:none;
+      animation: popfade .7s ease forwards
+    }
+    @keyframes popfade{
+      0%{opacity:0; transform:translate(-50%,-60%)} 
+      30%{opacity:1; transform:translate(-50%,-100%)} 
+      100%{opacity:0; transform:translate(-50%,-140%)}
+    }
+
     .player{
       position:absolute; inset:0; margin:5px; border-radius:10px; display:flex; align-items:center; justify-content:center;
       font-size:24px; user-select:none; color:#fff; font-weight:700
@@ -64,14 +89,10 @@
 
     /* overlays */
     .overlay{
-      position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      pointer-events:none; z-index:900;
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:900;
     }
     .gameover{
-      position:absolute; inset:0;
-      display:none; align-items:center; justify-content:center;
-      pointer-events:auto; z-index:1000;
+      position:absolute; inset:0; display:none; align-items:center; justify-content:center; pointer-events:auto; z-index:1000;
     }
     .overlayBox{
       padding:14px 18px; background:#00000060; border:1px solid #ffffff50; border-radius:18px;
@@ -90,7 +111,7 @@
       background:rgba(10,15,40,.45); z-index:1200;
     }
     .charbox{
-      background:#fff; color:#0b1540; border-radius:22px; border:1px solid #e6eaff; padding:22px; width:min(680px, 92%);
+      background:#fff; color:#0b1540; border-radius:22px; border:1px solid #e6eaff; padding:22px; width:min(720px, 92%);
       box-shadow: 0 20px 40px rgba(0,0,0,.15);
     }
     .charbox h2{margin:0 0 12px; font-size:24px}
@@ -104,12 +125,6 @@
     .charactions{display:flex; gap:10px; justify-content:flex-end}
     .note{color:#4b5aa8; font-size:13px}
 
-    .picker{display:flex; gap:10px; align-items:center}
-    .opt{border:2px solid #dbe3ff; background:#fff; padding:10px 12px; border-radius:16px; cursor:pointer;
-      display:flex; align-items:center; gap:10px; box-shadow: var(--shadow); font-weight:700}
-    .opt.active{border-color:var(--primary); outline:3px solid #dfe3ff}
-    .tip{color:#5167b7; text-align:center; margin-top:10px; font-size:13px}
-
     /* D-Pad */
     .pad{
       position:fixed; right:20px; bottom:20px; display:grid;
@@ -122,7 +137,7 @@
     .pad .pbtn:active{transform:scale(.97)}
     .pad .blank{background:transparent; border:none; box-shadow:none}
 
-    @media (max-width:860px){ .hud{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:1100px){ .hud{grid-template-columns:repeat(4,1fr)} }
     @media (max-width:520px){
       .hud{grid-template-columns:repeat(2,1fr)}
       .pad{right:12px; bottom:12px; gap:8px}
@@ -136,7 +151,8 @@
       <h1>เก็บดาวกันลูกๆ</h1>
       <div class="controls" id="menu">
         <div class="picker" id="picker"></div>
-        <button class="btn big" id="restartBtn" style="display:none;">เริ่มด่านนี้ใหม่</button>
+        <button class="btn big" id="pauseBtn" style="display:none;">หยุดพัก (P)</button>
+        <button class="btn secondary big" id="restartBtn" style="display:none;">เริ่มด่านนี้ใหม่</button>
         <button class="btn ghost big" id="backBtn" style="display:none;">กลับเมนู</button>
       </div>
     </div>
@@ -148,6 +164,8 @@
       <div class="card"><small>เวลา</small><b id="hudTime">25s</b></div>
       <div class="card"><small>คะแนน</small><b id="hudScore">0</b></div>
       <div class="card"><small>สถิติสูงสุด</small><b id="hudBest">M:L1/S0 • I:L1/S0</b></div>
+      <label class="card tog"><small>เสียง</small><input type="checkbox" id="toggleSound" checked></label>
+      <label class="card tog"><small>สั่น</small><input type="checkbox" id="toggleVibrate" checked></label>
     </div>
 
     <div class="boardWrap">
@@ -166,6 +184,18 @@
         </div>
       </div>
 
+      <div class="overlay" id="readyGo" style="display:none;">
+        <div class="overlayBox" id="readyText" style="font-size:42px;">3</div>
+      </div>
+
+      <div class="overlay" id="tutor" style="display:none;">
+        <div class="overlayBox" style="max-width:90%; font-size:16px;">
+          แตะกระดานเพื่อโฟกัส แล้วใช้ปุ่มลูกศร / WASD หรือปุ่มทิศทางด้านขวาล่าง<br>
+          เก็บ ⭐️ ให้ครบ (ด่านที่ 10 เป็น 🍓🍒🍉🍎) — เวลาต่อด่าน 25 วิ ✨
+          <div style="margin-top:10px"><button class="btn small" id="tutorOk">โอเค!</button></div>
+        </div>
+      </div>
+
       <div class="board" id="board" tabindex="0" title="แตะกระดานก่อน แล้วใช้ปุ่มทิศทาง">
         <div class="grid" id="grid"></div>
       </div>
@@ -180,7 +210,7 @@
       <div class="charoptions">
         <div class="charopt" data-char="Mickie">
           <div class="emo">🧛</div>
-          <div><div><b>Mickie</b></div><small class="note">พลังดูดเลือด…เอ๊ย แรงใจล้น! 😄</small></div>
+          <div><div><b>Mickie</b></div><small class="note">แรงใจล้น! วิ่งลุยเก็บดาว</small></div>
         </div>
         <div class="charopt" data-char="Indy">
           <div class="emo">🧟</div>
@@ -215,12 +245,12 @@
 
     // พาสเทลเปลี่ยนพื้นหลังตามเลเวล (วนลูป)
     const PASTELS = [
-      ['#fef6ff','#e9f0ff','#fff4f0'], // ชมพูอ่อน-ฟ้าพาสเทล
-      ['#e6fbff','#fef7ff','#f4fff5'], // ฟ้าน้ำทะเล-ชมพูจาง-เขียวมินต์
-      ['#fff7e6','#e6fff7','#f0f3ff'], // ส้มอ่อน-เขียวอ่อน-ฟ้าอ่อน
-      ['#fdf0ff','#f2fff8','#fff6ed'], // ม่วงอ่อน-เขียวอ่อน-ส้มพาสเทล
-      ['#eaf7ff','#fff0f5','#f7fff0'], // ฟ้าใส-ชมพูอ่อน-เขียวพาสเทล
-      ['#fff6f0','#f0f7ff','#f6fff6'], // ส้มครีม-ฟ้าพาสเทล-เขียวอ่อน
+      ['#fef6ff','#e9f0ff','#fff4f0'],
+      ['#e6fbff','#fef7ff','#f4fff5'],
+      ['#fff7e6','#e6fff7','#f0f3ff'],
+      ['#fdf0ff','#f2fff8','#fff6ed'],
+      ['#eaf7ff','#fff0f5','#f7fff0'],
+      ['#fff6f0','#f0f7ff','#f6fff6'],
     ];
     function applyLevelTheme(lv){
       const t = PASTELS[(lv-1) % PASTELS.length];
@@ -235,11 +265,49 @@
       Indy:{label:"Indy", class:"indy", emoji:"🧟"},
     };
 
+    // ===== WebAudio: เสียงเอฟเฟกต์ =====
+    let audioCtx=null;
+    function ensureAudio(){
+      if(!soundOn) return; // เคารพการปิดเสียง
+      if(!audioCtx){
+        const A=window.AudioContext||window.webkitAudioContext;
+        audioCtx=new A();
+      }
+      if(audioCtx.state==='suspended') audioCtx.resume();
+    }
+    function beep({freq=880, dur=0.08, type='sine', vol=0.2}={}){
+      if(!audioCtx || !soundOn) return;
+      const t=audioCtx.currentTime;
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type=type; o.frequency.value=freq;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t); o.stop(t+dur+0.02);
+    }
+    function arpeggio(notes=[440,660,880], step=0.08, vol=0.22){
+      if(!audioCtx || !soundOn) return;
+      notes.forEach((f,i)=> setTimeout(()=>beep({freq:f,dur:0.07,vol,type:'triangle'}), i*step*1000));
+    }
+    const sfx = {
+      pickup(isFruit){ ensureAudio(); if(isFruit) arpeggio([880,1180], 0.07, 0.20); else beep({freq:1100, dur:0.06, type:'square', vol:0.18}); },
+      clear(){ ensureAudio(); arpeggio([660,880,1320], 0.09, 0.22); },
+      over(){ ensureAudio(); arpeggio([440,330,220], 0.12, 0.20); },
+      tick(){ ensureAudio(); beep({freq:480, dur:0.05, type:'sine', vol:0.15}); }
+    };
+
+    // ===== Settings (persist) =====
+    let soundOn = JSON.parse(localStorage.getItem('kidStarsSound') ?? 'true');
+    let vibrateOn = JSON.parse(localStorage.getItem('kidStarsVib') ?? 'true');
+
     // ===== State =====
-    let gameStarted=false, gameOver=false;
+    let gameStarted=false, gameOver=false, paused=false;
     let level=1, coins=[], coinIcons=[], player={x:1,y:1}, collected=0, need=START_COINS;
-    let timeLeft=LEVEL_TIME, timerId=null;
+    let timeLeft=LEVEL_TIME, timerId=null, lowTickArmed=false;
     let character=null; let score=0;
+    let combo=0; let lastPickupAt=0;
 
     const best = JSON.parse(localStorage.getItem("kidStarsBest")||"{}");
     if(!best.Mickie) best.Mickie={level:1, score:0};
@@ -254,6 +322,7 @@
     const hudTime=document.getElementById('hudTime');
     const hudScore=document.getElementById('hudScore');
     const hudBest=document.getElementById('hudBest');
+    const pauseBtn=document.getElementById('pauseBtn');
     const restartBtn=document.getElementById('restartBtn');
     const backBtn=document.getElementById('backBtn');
     const motOverlay=document.getElementById('motOverlay');
@@ -263,11 +332,16 @@
     const retryBtn=document.getElementById('retryBtn');
     const picker=document.getElementById('picker');
     const pad=document.getElementById('pad');
-
+    const readyGo=document.getElementById('readyGo');
+    const readyText=document.getElementById('readyText');
+    const tutor=document.getElementById('tutor');
+    const tutorOk=document.getElementById('tutorOk');
     const charSelect=document.getElementById('charSelect');
     const confirmPick=document.getElementById('confirmPick');
     const cancelPick=document.getElementById('cancelPick');
     const charOpts=[...document.querySelectorAll('.charopt')];
+    const toggleSound=document.getElementById('toggleSound');
+    const toggleVibrate=document.getElementById('toggleVibrate');
 
     // ===== Helpers =====
     function buildGrid(){
@@ -295,8 +369,10 @@
       hudLevel.textContent=level;
       hudCoins.textContent=`${collected}/${need}`;
       hudTime.textContent=`${Math.max(0,timeLeft)}s`;
+      hudTime.style.color = timeLeft<=5 ? '#ef4444' : '';
       hudScore.textContent=score;
       hudBest.textContent=`M:L${best.Mickie.level}/S${best.Mickie.score} • I:L${best.Indy.level}/S${best.Indy.score}`;
+      boardEl.classList.toggle('lowtime', timeLeft<=5);
     }
 
     function renderActors(){
@@ -309,6 +385,12 @@
       }
       const pidx=player.y*GRID_COLS+player.x; const pcell=cells[pidx];
       const pdiv=document.createElement('div'); pdiv.className='player '+(character?CHARACTERS[character].class:''); pdiv.textContent= character ? CHARACTERS[character].emoji : '🙂'; pcell.appendChild(pdiv);
+    }
+
+    function popupScoreAt(x,y, text){
+      const idx=y*GRID_COLS+x; const cell=gridEl.children[idx];
+      const p=document.createElement('div'); p.className='pop'; p.textContent=text;
+      cell.appendChild(p); setTimeout(()=>p.remove(), 800);
     }
 
     function setupPicker(){
@@ -333,6 +415,14 @@
       return arr;
     }
 
+    function applyTutorialIfFirstTime(){
+      const seen = localStorage.getItem('kidStarsTutorSeen');
+      if(!seen){
+        tutor.style.display='flex';
+        tutorOk.onclick = ()=>{ tutor.style.display='none'; localStorage.setItem('kidStarsTutorSeen','1'); };
+      }
+    }
+
     function setupLevel(lv=level){
       applyLevelTheme(lv);
       player={x:1,y:1};
@@ -346,30 +436,51 @@
         const k=p.x+','+p.y;
         if(!placed.has(k)){ placed.add(k); coins.push(p); }
       }
-      collected=0; need=count; timeLeft=LEVEL_TIME; gameOver=false;
+      collected=0; need=count; timeLeft=LEVEL_TIME; gameOver=false; lowTickArmed=false;
+      combo=0; lastPickupAt=0;
       coinIcons=makeCoinIcons(lv, coins.length);
       renderHUD(); renderActors();
+    }
+
+    function levelReadyCountdown(cb){
+      readyGo.style.display='flex';
+      let n=3; readyText.textContent=n;
+      const t=setInterval(()=>{
+        n--; if(n>0){ readyText.textContent=n; } else {
+          readyText.textContent='Go!'; setTimeout(()=>{ readyGo.style.display='none'; }, 250);
+          clearInterval(t); cb && cb();
+        }
+      }, 700);
     }
 
     function startTimer(){
       stopTimer();
       timerId=setInterval(()=>{
-        timeLeft--; renderHUD();
+        if(paused) return;
+        timeLeft--; 
+        if(timeLeft<=5){
+          if(!lowTickArmed){ lowTickArmed=true; }
+          sfx.tick();
+        }
+        renderHUD();
         if(timeLeft<=0 && collected<need){ triggerGameOver(); }
       }, 1000);
     }
     function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
 
     function saveBests(){
-      if(level>best[character].level) best[character].level=level;
-      if(score>best[character].score) best[character].score=score;
-      localStorage.setItem("kidStarsBest", JSON.stringify(best));
+      if(character){
+        if(level>best[character].level) best[character].level=level;
+        if(score>best[character].score) best[character].score=score;
+        localStorage.setItem("kidStarsBest", JSON.stringify(best));
+      }
     }
+
+    function vibrate(ms=20){ if(vibrateOn && navigator.vibrate) navigator.vibrate(ms); }
 
     function triggerGameOver(){
       if(gameOver) return;
-      gameOver=true; stopTimer(); saveBests();
-      gameOverEl.style.display='flex';
+      gameOver=true; stopTimer(); saveBests(); sfx.over(); gameOverEl.style.display='flex'; vibrate(60);
     }
     function hideGameOver(){ gameOverEl.style.display='none'; }
 
@@ -379,25 +490,41 @@
       setTimeout(()=> motOverlay.style.display='none', 2000);
     }
 
-    function addScoreOnPickup(){ score+=10; }
+    function addScoreOnPickup(base, x, y){
+      const now = performance.now();
+      if(now - lastPickupAt <= 2000){ combo++; } else { combo=1; }
+      lastPickupAt = now;
+
+      const mult = Math.min(combo, 5); // ลิมิต x5
+      const gain = base * mult;
+      score += gain;
+      popupScoreAt(x,y, `+${gain}${mult>1?` (x${mult})`:''}`);
+    }
     function addScoreOnClear(){ score+=Math.max(0,timeLeft)*5; }
 
     function tryMove(dx,dy){
-      if(!gameStarted || gameOver) return;
+      if(!gameStarted || gameOver || paused) return;
       const nx=Math.max(0, Math.min(GRID_COLS-1, player.x+dx));
       const ny=Math.max(0, Math.min(GRID_ROWS-1, player.y+dy));
       player={x:nx,y:ny};
       const idx=coins.findIndex(c=>c.x===nx && c.y===ny);
-      if(idx>=0){ coins.splice(idx,1); coinIcons.splice(idx,1); collected++; addScoreOnPickup(); renderHUD(); }
+      if(idx>=0){
+        const icon = coinIcons[idx];
+        coins.splice(idx,1); coinIcons.splice(idx,1);
+        collected++;
+        addScoreOnPickup(10, nx, ny);
+        sfx.pickup(icon && icon!=='⭐️');
+        vibrate(15);
+        renderHUD();
+      }
       renderActors();
       if(collected>=need){
-        addScoreOnClear();
-        if(level>best[character].level) best[character].level=level;
-        if(score>best[character].score) best[character].score=score;
-        localStorage.setItem("kidStarsBest", JSON.stringify(best));
+        addScoreOnClear(); sfx.clear(); vibrate(30);
+        saveBests();
         const nextLevel=level+1;
         if(nextLevel%10===0) showMotivation(nextLevel);
         level=nextLevel; setupLevel(nextLevel);
+        levelReadyCountdown(()=>{ startTimer(); });
       }
     }
 
@@ -417,16 +544,22 @@
       character = pendingPick;
       setupPicker(); renderHUD();
       charSelect.style.display='none';
-      startGame();
+      applyTutorialIfFirstTime();
+      level=1; score=0; gameOver=false; paused=false;
+      setupLevel(1);
+      levelReadyCountdown(()=>{ ensureAudio(); gameStarted=true; showIngameButtons(true); startTimer(); boardEl.focus(); });
     });
-    cancelPick.addEventListener('click', ()=>{
-      // ให้เลือกก่อนเท่านั้น เลยไม่ปิด modal ถ้าอยากปิดก็ได้ แต่ตามโจทย์ "ต้องเลือกก่อน"
-      // ทำอะไรไม่ต้องก็ได้
+    cancelPick.addEventListener('click', ()=>{ /* ต้องเลือกก่อน จึงไม่ปิด modal */ });
+
+    // Visibility pause
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden && gameStarted && !gameOver){ setPaused(true); }
     });
 
     // Keyboard & D-Pad
     const boardElKeyHandler = (e)=>{
       if(!gameStarted || gameOver) return;
+      if(e.key==='p' || e.key==='P'){ togglePause(); return e.preventDefault(); }
       switch(e.key){
         case 'ArrowUp': case 'w': case 'W': tryMove(0,-1); break;
         case 'ArrowDown': case 's': case 'S': tryMove(0,1); break;
@@ -440,6 +573,7 @@
     document.getElementById('pad').addEventListener('touchstart', (e)=>{ e.preventDefault(); }, {passive:false});
     document.querySelectorAll('.pbtn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
+        ensureAudio();
         const dir=btn.getAttribute('data-dir');
         if(dir==='up') tryMove(0,-1);
         if(dir==='down') tryMove(0,1);
@@ -449,25 +583,46 @@
     });
 
     // Buttons
-    function startGame(){
-      level=1; score=0; gameStarted=true; gameOver=false; setupLevel(1);
-      restartBtn.style.display='inline-flex'; backBtn.style.display='inline-flex';
-      boardEl.focus(); startTimer();
+    function showIngameButtons(on){
+      pauseBtn.style.display = on ? 'inline-flex' : 'none';
+      restartBtn.style.display = on ? 'inline-flex' : 'none';
+      backBtn.style.display = on ? 'inline-flex' : 'none';
     }
-    function restartLevel(){ gameOver=false; setupLevel(level); boardEl.focus(); startTimer(); }
+    function startGame(){
+      // เริ่มผ่านหน้าตัวละครแล้ว
+      setupLevel(1); ensureAudio(); gameStarted=true; paused=false; gameOver=false;
+      showIngameButtons(true); boardEl.focus(); startTimer();
+    }
+    function restartLevel(){
+      if(gameOver){ hideGameOver(); }
+      setupLevel(level); paused=false; boardEl.focus(); levelReadyCountdown(()=> startTimer());
+    }
     function backToMenu(){
-      gameStarted=false; gameOver=false;
-      restartBtn.style.display='none'; backBtn.style.display='none';
-      stopTimer(); renderHUD(); renderActors();
-      // กลับไปเลือกตัวละครใหม่
+      gameStarted=false; gameOver=false; paused=false; stopTimer(); renderHUD(); renderActors();
+      showIngameButtons(false);
       charSelect.style.display='flex';
       pendingPick=null; confirmPick.disabled=true; cancelPick.disabled=true;
       charOpts.forEach(o=>o.classList.remove('active'));
       character=null; renderHUD(); setupPicker();
     }
-    restartBtn.onclick=restartLevel; backBtn.onclick=backToMenu;
-    newBtn.onclick=()=>{ hideGameOver(); startGame(); };
-    retryBtn.onclick=()=>{ hideGameOver(); restartLevel(); };
+    function setPaused(p){
+      if(!gameStarted || gameOver) return;
+      paused = p;
+      pauseBtn.textContent = p ? 'เล่นต่อ (P)' : 'หยุดพัก (P)';
+    }
+    function togglePause(){ setPaused(!paused); }
+
+    pauseBtn.onclick=()=>{ ensureAudio(); togglePause(); };
+    restartBtn.onclick=()=>{ ensureAudio(); restartLevel(); };
+    backBtn.onclick=backToMenu;
+    newBtn.onclick=()=>{ hideGameOver(); ensureAudio(); level=1; score=0; startGame(); };
+    retryBtn.onclick=()=>{ hideGameOver(); ensureAudio(); restartLevel(); };
+
+    // Toggles persist
+    toggleSound.checked = soundOn;
+    toggleVibrate.checked = vibrateOn;
+    toggleSound.addEventListener('change', ()=>{ soundOn = toggleSound.checked; localStorage.setItem('kidStarsSound', JSON.stringify(soundOn)); if(soundOn) ensureAudio(); });
+    toggleVibrate.addEventListener('change', ()=>{ vibrateOn = toggleVibrate.checked; localStorage.setItem('kidStarsVib', JSON.stringify(vibrateOn)); });
 
     // Init
     function setupPickerInitial(){
@@ -481,7 +636,10 @@
     }
     applyLevelTheme(1);
     buildGrid(); setupPickerInitial(); setupLevel(1); renderHUD(); renderActors();
-    boardEl.addEventListener('click', ()=> boardEl.focus());
+    boardEl.addEventListener('click', ()=>{ ensureAudio(); boardEl.focus(); });
+
+    // เปิดหน้าจอเลือกตัวละครตั้งแต่โหลด
+    charSelect.style.display='flex';
   </script>
 </body>
 </html>
